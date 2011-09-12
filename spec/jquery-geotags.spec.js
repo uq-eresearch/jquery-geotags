@@ -15,14 +15,12 @@ describe('jquery-w3cdtf', function() {
       wrapper.append(initialElement);
     });
 
-    it('uses the existing class as a container', function() {
-
+    it('allows tags to be added manually', function() {
       expect($('div', wrapper).length).toBe(1);
       $(initialElement).geotags({});
-      expect($('div', wrapper).length >= 1).toBeTruthy();
+      expect($('div', wrapper).length).toBeGreaterThan(0);
 
       expect($('div input', wrapper).length).toBe(0);
-      console.debug($(initialElement).data('geotags'));
       $(initialElement).data('geotags').addTag('Mosnang',
           'http://www.geonames.org/7286562', true);
       expect($('div input', wrapper).length).toBe(2);
@@ -31,6 +29,26 @@ describe('jquery-w3cdtf', function() {
       expect($('div input:hidden[name="href"]', wrapper).val()).toBe(
           'http://www.geonames.org/7286562');
       expect($('div button', wrapper).last().text()).toBe('Mosnang');
+    });
+
+    it('provides a list of locked tags', function() {
+      $(initialElement).geotags({});
+
+      expect($('div input', wrapper).length).toBe(0);
+      $(initialElement).data('geotags').addTag('Mosnang',
+          'http://www.geonames.org/7286562', true);
+      $(initialElement).data('geotags').addTag('Wahlkreis Toggenburg',
+          'http://www.geonames.org/7285001', false);
+      $(initialElement).data('geotags').addTag('Swiss Confederation',
+          'http://www.geonames.org/2658434', true);
+
+      expect($(initialElement).data('geotags').getLocked()).toEqual([ {
+        label : 'Mosnang',
+        href : 'http://www.geonames.org/7286562'
+      }, {
+        label : 'Swiss Confederation',
+        href : 'http://www.geonames.org/2658434'
+      } ]);
     });
 
     afterEach(function() {

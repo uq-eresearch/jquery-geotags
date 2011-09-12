@@ -26,7 +26,7 @@
 
     _create : function() {
       this.containers = {};
-      _.each([ 'checked', 'unchecked' ], function(containerName) {
+      _.each([ 'locked', 'unlocked' ], function(containerName) {
         var container = $('<div />');
         container.addClass(this.widgetBaseClass + '-' + containerName);
         this.containers[containerName] = container;
@@ -35,16 +35,16 @@
 
     },
 
-    _getIconSettings : function(checked) {
-      return checked ? {
+    _getIconSettings : function(locked) {
+      return locked ? {
         primary : 'ui-icon-locked'
       } : {
         primary : 'ui-icon-unlocked'
       };
     },
 
-    addTag : function(label, href, checked) {
-      var containerName = checked ? 'checked' : 'unchecked';
+    addTag : function(label, href, locked) {
+      var containerName = locked ? 'locked' : 'unlocked';
 
       // Create wrapper
       var wrapper = $('<div />');
@@ -63,7 +63,7 @@
       }).bind('click.open', _.bind(function() {
         window.open(href, '_blank');
       }, this)).parent().buttonset();
-      this._toggleTag(wrapper, checked);
+      this._toggleTag(wrapper, locked);
 
       // Include info
       wrapper.addClass(this.widgetBaseClass + '-tag');
@@ -74,22 +74,31 @@
         $('<input type="hidden"/>').attr('name', k).attr('value', v).appendTo(
             wrapper);
       }, this);
-
-      console.debug(this.element);
     },
 
-    _toggleTag : function(tag, checked) {
-      if (checked === undefined) {
+    getLocked : function() {
+      var tagSelector = '.' + this.widgetBaseClass + '-tag';
+      return _.map(this.containers['locked'].find(tagSelector), function(tag) {
+        var obj = {};
+        _.each($(tag).find('input'), function(input) {
+          obj[$(input).attr('name')] = $(input).val();
+        });
+        return obj;
+      }, this);
+    },
+
+    _toggleTag : function(tag, locked) {
+      if (locked === undefined) {
         // Opposite of current state
-        checked = !this.containers['checked'].is(tag.parent());
+        locked = !this.containers['locked'].is(tag.parent());
       }
       tag.find('button').first().button('option', 'icons',
-          this._getIconSettings(checked));
-      if (checked) {
-        tag.detach().appendTo(this.containers['checked']);
+          this._getIconSettings(locked));
+      if (locked) {
+        tag.detach().appendTo(this.containers['locked']);
         tag.find('button').addClass('ui-priority-primary');
       } else {
-        tag.detach().appendTo(this.containers['unchecked']);
+        tag.detach().appendTo(this.containers['unlocked']);
         tag.find('button').removeClass('ui-priority-primary');
       }
     }
