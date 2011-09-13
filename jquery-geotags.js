@@ -51,14 +51,11 @@
         this.knownTags[href] = label;
       }
 
-      var containerName = locked ? 'locked' : 'unlocked';
-
       // Create wrapper
       var wrapper = $('<div />');
       _(2).times(function() {
         wrapper.append('<button />');
       });
-      this._putTagInContainer(this.containers[containerName], wrapper);
 
       // Setup buttons
       $('button', wrapper).first().text('Toggle').button({
@@ -71,8 +68,7 @@
       }).bind('click.open', _.bind(function(e) {
         e.preventDefault();
         window.open(href, '_blank');
-      }, this)).parent().buttonset();
-      this._toggleTag(wrapper, locked);
+      }, this));
 
       // Include info
       wrapper.addClass(this.widgetBaseClass + '-tag');
@@ -83,6 +79,9 @@
         $('<input type="hidden"/>').attr('name', k).attr('value', v).appendTo(
             wrapper);
       }, this);
+
+      this._toggleTag(wrapper, locked);
+      wrapper.buttonset();
     },
 
     getLocked : function() {
