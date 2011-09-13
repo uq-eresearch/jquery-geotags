@@ -22,7 +22,8 @@
 (function($) {
   $.widget("geotags.geotags", {
     options : {
-      username : 'geotags'
+      username : 'geotags',
+      maxNearby : 25
     },
 
     _create : function() {
@@ -123,7 +124,7 @@
             tags.push({
               id : result.geonameId,
               label : result.name,
-              href : 'http://geonames.org/' + result.geonameId + '/'
+              href : 'http://sws.geonames.org/' + result.geonameId + '/'
             });
           }
         });
@@ -145,7 +146,7 @@
           'lat' : lat,
           'lng' : long,
           'radius' : radius,
-          'maxRows' : 50,
+          'maxRows' : this.options.maxNearby,
           'style' : 'SHORT',
           'username' : this.options.username
         },
