@@ -60,8 +60,6 @@ describe('jquery-w3cdtf', function() {
 
       var tagsWereLoaded = false;
 
-      // spyOn($(initialElement).data('geotags'), 'addTag').andCallThrough();
-      // expect($(initialElement).data('geotags').addTag).not.toHaveBeenCalled();
       $($(initialElement).data('geotags')).bind('tagsLoaded', function() {
         tagsWereLoaded = true;
       });
@@ -76,13 +74,10 @@ describe('jquery-w3cdtf', function() {
         return tagsWereLoaded;
       }, "tags to load", 10000);
 
-      // expect($(initialElement).data('geotags').addTag).toHaveBeenCalled();
-      // expect($(initialElement).data('geotags').addTag.callCount).toBe(7);
-
     });
 
     afterEach(function() {
-      // wrapper.remove();
+      wrapper.remove();
     });
 
   });

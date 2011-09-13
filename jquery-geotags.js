@@ -158,6 +158,10 @@
 
     _putTagInContainer : function(container, tag) {
       tag.detach().appendTo(container);
+      var orderedTags = $(_.sortBy(container.children(), function(tag) {
+        return $('input[name="label"]', tag).val();
+      }));
+      orderedTags.detach().appendTo(container);
     }
 
   });
