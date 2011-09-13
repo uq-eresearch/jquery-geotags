@@ -34,6 +34,8 @@
         this.element.append(container);
       }, this);
       this.knownTags = {};
+      // So we can use this object's functions callbacks/handlers
+      _.bindAll(this);
     },
 
     _getIconSettings : function(locked) {
@@ -98,8 +100,8 @@
     clearUnlocked : function() {
       var tags = this.containers['unlocked'].children();
       _.each(tags, function(tag) {
-        this.knownTags[$('input[name="href"]', tag).val()] = undefined;
-      });
+        this.knownTags[$('input[name="href"]', tag).val()] = null;
+      }, this);
       this.containers['unlocked'].empty();
     },
 
@@ -135,6 +137,7 @@
           this.addTag(tag.label, tag.href, false);
         }, this);
         $(this).trigger('tagsLoaded', [ tags ]);
+        this.containers['unlocked'].fadeIn();
       }, this);
       $.ajax('http://api.geonames.org/findNearbyJSON', {
         type : 'GET',
@@ -150,17 +153,20 @@
         success : processResponse
       }).done(_.bind(function() {
         var geonameId = _.first(tags).id;
-        $.ajax('http://api.geonames.org/hierarchyJSON', {
-          type : 'GET',
-          data : {
-            'geonameId' : geonameId,
-            'style' : 'SHORT',
-            'username' : this.options.username
-          },
-          dataType : 'json',
-          success : processResponse
-        }).done(addTags);
+        if (geonameId != null) {
+          $.ajax('http://api.geonames.org/hierarchyJSON', {
+            type : 'GET',
+            data : {
+              'geonameId' : geonameId,
+              'style' : 'SHORT',
+              'username' : this.options.username
+            },
+            dataType : 'json',
+            success : processResponse
+          }).done(addTags);
+        }
       }, this));
+      this.containers['unlocked'].fadeOut();
     },
 
     _toggleTag : function(tag, locked) {
