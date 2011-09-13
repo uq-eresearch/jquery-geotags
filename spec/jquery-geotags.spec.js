@@ -65,7 +65,7 @@ describe('jquery-w3cdtf', function() {
       });
 
       runs(function() {
-        $(initialElement).data('geotags').loadTags(47.3, 9);
+        $(initialElement).data('geotags').loadTags(-27.55, 153.03, 1);
       });
 
       waits(1000);
@@ -74,10 +74,20 @@ describe('jquery-w3cdtf', function() {
         return tagsWereLoaded;
       }, "tags to load", 10000);
 
+      runs(function() {
+        var expectedLabels = [ 'Australia', 'Brisbane', 'Oceania',
+            'Queensland', 'Salisbury' ];
+        var labels = _.map($('input[name="label"]', wrapper), function(e) {
+          return $(e).val();
+        });
+        var matches = _.intersection(expectedLabels, labels);
+        expect(matches.length).toBe(expectedLabels.length);
+      });
+
     });
 
     afterEach(function() {
-      wrapper.remove();
+      // wrapper.remove();
     });
 
   });

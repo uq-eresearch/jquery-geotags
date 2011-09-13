@@ -58,11 +58,13 @@
       // Setup buttons
       $('button', wrapper).first().text('Toggle').button({
         text : false
-      }).bind('click.toggle', _.bind(function() {
+      }).bind('click.toggle', _.bind(function(e) {
+        e.preventDefault();
         this._toggleTag(wrapper);
       }, this)).next().button({
         label : label
-      }).bind('click.open', _.bind(function() {
+      }).bind('click.open', _.bind(function(e) {
+        e.preventDefault();
         window.open(href, '_blank');
       }, this)).parent().buttonset();
       this._toggleTag(wrapper, locked);
@@ -93,20 +95,32 @@
       this.containers['unlocked'].empty();
     },
 
-    loadTags : function(lat, long) {
-      var tagHash = {};
+    loadTags : function(lat, long, radius) {
+      if (radius === undefined) {
+        // Default 1km radius
+        radius = 1;
+      } else if (radius > 300) {
+        // Geonames has a max radius of 300km
+        radius = 300;
+      }
+      var excludedTags = {
+        '6295630' : 'Earth'
+      };
+      var tags = [];
       var processResponse = function(data, textStatus, jqXHR) {
         _.each(data['geonames'], function(result) {
-          tagHash[result.geonameId] = {
-            label : result.name,
-            href : 'http://geonames.org/' + result.geonameId + '/'
-          };
+          if (!excludedTags[result.geonameId]) {
+            tags.push({
+              id : result.geonameId,
+              label : result.name,
+              href : 'http://geonames.org/' + result.geonameId + '/'
+            });
+          }
         });
       };
       var addTags = _.bind(function() {
         this.clearUnlocked();
-        var tags = _(tagHash).values();
-        tags = _.sortBy(tags, function(tag) {
+        tags = _(tags).sortBy(function(tag) {
           return tag.label;
         });
         _.each(tags, function(tag) {
@@ -119,14 +133,15 @@
         data : {
           'lat' : lat,
           'lng' : long,
-          'maxRows' : 10,
+          'radius' : radius,
+          'maxRows' : 50,
           'style' : 'SHORT',
           'username' : this.options.username
         },
         dataType : 'json',
         success : processResponse
       }).done(_.bind(function() {
-        var geonameId = _.first(_(tagHash).keys());
+        var geonameId = _.first(tags).id;
         $.ajax('http://api.geonames.org/hierarchyJSON', {
           type : 'GET',
           data : {
