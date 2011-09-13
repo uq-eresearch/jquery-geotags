@@ -55,7 +55,7 @@
       }
 
       // Create wrapper
-      var wrapper = $('<div />');
+      var wrapper = $('<div />').css('display', 'none');
       _(2).times(function() {
         wrapper.append('<button />');
       });
@@ -84,7 +84,7 @@
       }, this);
 
       this._toggleTag(wrapper, locked);
-      wrapper.buttonset();
+      wrapper.buttonset().fadeIn(600);
     },
 
     getLocked : function() {
@@ -130,6 +130,8 @@
         });
       };
       var addTags = _.bind(function() {
+        this.containers['unlocked'].removeClass(this.widgetBaseClass
+            + '-loading');
         this.clearUnlocked();
         tags = _(tags).sortBy(function(tag) {
           return tag.label;
@@ -138,7 +140,6 @@
           this.addTag(tag.label, tag.href, false);
         }, this);
         $(this).trigger('tagsLoaded', [ tags ]);
-        this.containers['unlocked'].fadeIn();
       }, this);
       $.ajax('http://api.geonames.org/findNearbyJSON', {
         type : 'GET',
@@ -167,7 +168,8 @@
           }).done(addTags);
         }
       }, this));
-      this.containers['unlocked'].fadeOut();
+      this.containers['unlocked'].children().fadeOut(600);
+      this.containers['unlocked'].addClass(this.widgetBaseClass + '-loading');
     },
 
     _toggleTag : function(tag, locked) {
