@@ -9,6 +9,9 @@ describe('jquery-w3cdtf', function() {
     var initialElement = null;
 
     beforeEach(function() {
+      if (wrapper != null) {
+        wrapper.remove();
+      }
       wrapper = $('<div/>');
       $('body').append(wrapper);
       initialElement = $('<div/>');
@@ -51,8 +54,35 @@ describe('jquery-w3cdtf', function() {
       } ]);
     });
 
+    it('can get tags from a lat/long', function() {
+      expect($('div input', wrapper).length).toBe(0);
+      $(initialElement).geotags({});
+
+      var tagsWereLoaded = false;
+
+      // spyOn($(initialElement).data('geotags'), 'addTag').andCallThrough();
+      // expect($(initialElement).data('geotags').addTag).not.toHaveBeenCalled();
+      $($(initialElement).data('geotags')).bind('tagsLoaded', function() {
+        tagsWereLoaded = true;
+      });
+
+      runs(function() {
+        $(initialElement).data('geotags').loadTags(47.3, 9);
+      });
+
+      waits(1000);
+
+      waitsFor(function() {
+        return tagsWereLoaded;
+      }, "tags to load", 10000);
+
+      // expect($(initialElement).data('geotags').addTag).toHaveBeenCalled();
+      // expect($(initialElement).data('geotags').addTag.callCount).toBe(7);
+
+    });
+
     afterEach(function() {
-      wrapper.remove();
+      // wrapper.remove();
     });
 
   });

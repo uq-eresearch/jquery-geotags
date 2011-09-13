@@ -22,7 +22,9 @@
 (function($) {
   $.widget("geotags.geotags", {
 
-    options : {},
+    options : {
+      username : 'geotags'
+    },
 
     _create : function() {
       this.containers = {};
@@ -51,7 +53,7 @@
       _(2).times(function() {
         wrapper.append('<button />');
       });
-      this.containers[containerName].append(wrapper);
+      this._putTagInContainer(this.containers[containerName], wrapper);
 
       // Setup buttons
       $('button', wrapper).first().text('Toggle').button({
@@ -87,6 +89,57 @@
       }, this);
     },
 
+    clearUnlocked : function() {
+      this.containers['unlocked'].empty();
+    },
+
+    loadTags : function(lat, long) {
+      var tagHash = {};
+      var processResponse = function(data, textStatus, jqXHR) {
+        _.each(data['geonames'], function(result) {
+          tagHash[result.geonameId] = {
+            label : result.name,
+            href : 'http://geonames.org/' + result.geonameId + '/'
+          };
+        });
+      };
+      var addTags = _.bind(function() {
+        this.clearUnlocked();
+        var tags = _(tagHash).values();
+        tags = _.sortBy(tags, function(tag) {
+          return tag.label;
+        });
+        _.each(tags, function(tag) {
+          this.addTag(tag.label, tag.href, false);
+        }, this);
+        $(this).trigger('tagsLoaded', [ tags ]);
+      }, this);
+      $.ajax('http://api.geonames.org/findNearbyJSON', {
+        type : 'GET',
+        data : {
+          'lat' : lat,
+          'lng' : long,
+          'maxRows' : 10,
+          'style' : 'SHORT',
+          'username' : this.options.username
+        },
+        dataType : 'json',
+        success : processResponse
+      }).done(_.bind(function() {
+        var geonameId = _.first(_(tagHash).keys());
+        $.ajax('http://api.geonames.org/hierarchyJSON', {
+          type : 'GET',
+          data : {
+            'geonameId' : geonameId,
+            'style' : 'SHORT',
+            'username' : this.options.username
+          },
+          dataType : 'json',
+          success : processResponse
+        }).done(addTags);
+      }, this));
+    },
+
     _toggleTag : function(tag, locked) {
       if (locked === undefined) {
         // Opposite of current state
@@ -95,12 +148,16 @@
       tag.find('button').first().button('option', 'icons',
           this._getIconSettings(locked));
       if (locked) {
-        tag.detach().appendTo(this.containers['locked']);
+        this._putTagInContainer(this.containers['locked'], tag);
         tag.find('button').addClass('ui-priority-primary');
       } else {
-        tag.detach().appendTo(this.containers['unlocked']);
+        this._putTagInContainer(this.containers['unlocked'], tag);
         tag.find('button').removeClass('ui-priority-primary');
       }
+    },
+
+    _putTagInContainer : function(container, tag) {
+      tag.detach().appendTo(container);
     }
 
   });
