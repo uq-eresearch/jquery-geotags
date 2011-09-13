@@ -21,7 +21,6 @@
  */
 (function($) {
   $.widget("geotags.geotags", {
-
     options : {
       username : 'geotags'
     },
@@ -34,7 +33,7 @@
         this.containers[containerName] = container;
         this.element.append(container);
       }, this);
-
+      this.knownTags = {};
     },
 
     _getIconSettings : function(locked) {
@@ -46,6 +45,12 @@
     },
 
     addTag : function(label, href, locked) {
+      if (this.knownTags[href]) {
+        return;
+      } else {
+        this.knownTags[href] = label;
+      }
+
       var containerName = locked ? 'locked' : 'unlocked';
 
       // Create wrapper
@@ -92,6 +97,10 @@
     },
 
     clearUnlocked : function() {
+      var tags = this.containers['unlocked'].children();
+      _.each(tags, function(tag) {
+        this.knownTags[$('input[name="href"]', tag).val()] = undefined;
+      });
       this.containers['unlocked'].empty();
     },
 

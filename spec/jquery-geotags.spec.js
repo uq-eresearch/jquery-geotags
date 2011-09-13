@@ -82,6 +82,8 @@ describe('jquery-w3cdtf', function() {
         });
         var matches = _.intersection(expectedLabels, labels);
         expect(matches.length).toBe(expectedLabels.length);
+        // Tags should be unique
+        expect(labels).toEqual(_.uniq(labels));
       });
 
     });
